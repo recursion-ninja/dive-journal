@@ -1,0 +1,178 @@
+Cabal-Version: 3.4
+Name:          dive-journal
+Version:       2.2.12
+Stability:     Stable
+Build-Type:    Simple
+
+Author:        Alex Washburn <github@recursion.ninja>
+Copyright:     (c) 2015-2022 Alex Washburn
+License:       CC-BY-SA-4.0
+License-File:  LICENSE
+
+Maintainer:    Alex Washburn <github@recursion.ninja>
+Homepage:      https://github.com/recursion-ninja/dive-journal
+Bug-Reports:   https://github.com/recursion-ninja/dive-journal/issues
+
+Synopsis:      The TUI for logging dives
+Description:   The builds the frontend TUI along with other components for recording dive logs into a journal.
+
+Category: CLI TUI Web
+Tested-With: GHC == 9.6.1
+
+Source-Repository head
+  type: git
+  location: https://github.com/recursion-ninja/dive-journal
+
+
+Flag Enforce-Sanity
+   Description: Ensure that all warnings are handled
+   Default:     False
+   Manual:      True
+
+Flag Forego-Sanity
+   Description: Disable extensive and helpful compiler warnings
+   Default:     False
+   Manual:      True
+
+Flag Super-Optimization
+   Description: Apply extremely agressive and extremely time consuming optimization passes
+   Default:     False
+   Manual:      True
+
+Flag Use-LLVM
+   Description: Utilize the LLVM code generator backend
+   Default:     False
+   Manual:      True
+
+-- Global build directives
+-- A litany of GHC warnings designed to alert us during the build of any common
+-- pitfalls, future compatibility issues, or coding conventions.
+common build-config
+
+  Default-Extensions:
+    BangPatterns
+    DeriveAnyClass
+    DerivingStrategies
+    NoGeneralizedNewtypeDeriving
+    LambdaCase
+    UnicodeSyntax
+
+  Default-Language:
+    GHC2021
+
+  If !flag(Forego-Sanity)
+    GHC-Options:
+      -- Sanity check warnings
+      --   1. Include all warnings by default
+      -Weverything
+      --   2. Exclude the undesirable warnings
+      -Wno-all-missed-specialisations
+      -Wno-implicit-prelude
+      -Wno-missing-import-lists
+      -Wno-missing-kind-signatures
+      -Wno-missing-safe-haskell-mode
+      -Wno-monomorphism-restriction
+      -Wno-redundant-bang-patterns
+      -Wno-type-defaults
+      -Wno-unsafe
+
+  If flag(Enforce-Sanity)
+    GHC-Options:
+      -Werror
+
+
+Executable dive-journal-tui
+
+  import:
+    build-config
+
+  build-depends:
+--    dive-journal:terminal-layout,
+    base >=4.7 && <5,
+    brick,
+--    directory,
+--    filepath,
+    microlens,
+    microlens-th,
+--    mtl,
+    vector,
+    vty,
+
+  ghc-options:
+    -rtsopts
+    -threaded
+    -with-rtsopts=-N
+    -ddump-splices
+
+  hs-source-dirs:
+    app
+
+  main-is:
+    FrontEnd.hs
+
+  other-modules:
+--    FrontEnd.Core
+--    FrontEnd.Types
+
+  other-extensions:
+    TemplateHaskell
+
+
+-- Make something like this later:
+--
+-- Library terminal-layout
+
+
+Library dive-datum
+
+  import:
+    build-config
+
+  build-depends:
+    base >=4.7 && < 5,
+    deepseq,
+    geodetics >= 0.1.2,
+    microlens,
+    microlens-th,
+--    pandoc,
+    pandoc-types,
+--    text,
+    time,
+    dive-journal:dive-entry-class
+
+  exposed-modules:
+    SCUBA.Dive
+    SCUBA.Dive.Event
+    SCUBA.Dive.Result
+
+  other-modules:
+    SCUBA.Dive.Read.Utilities
+
+  ghc-options:
+    -ddump-splices
+
+  hs-source-dirs:
+    lib/dive-datum
+
+  visibility:
+    private
+
+
+Library dive-entry-class
+
+  import:
+    build-config
+
+  build-depends:
+    base >=4.7 && <5,
+    containers,
+    pandoc-types,
+
+  exposed-modules:
+    SCUBA.Entry.Class
+
+  hs-source-dirs:
+    lib/dive-entry-class
+
+  visibility:
+    private
