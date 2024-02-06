@@ -138,12 +138,13 @@ Library dive-datum
     pandoc-types,
 --    text,
     time,
-    dive-journal:dive-entry-class
+    dive-journal:dive-entry-class,
 
   exposed-modules:
     SCUBA.Dive
+    SCUBA.Dive.Equipment
     SCUBA.Dive.Event
-    SCUBA.Dive.Result
+    SCUBA.Dive.Outcome
 
   other-modules:
     SCUBA.Dive.Read.Utilities
@@ -153,6 +154,37 @@ Library dive-datum
 
   hs-source-dirs:
     lib/dive-datum
+
+  visibility:
+    private
+
+
+Library dive-form
+
+  import:
+    build-config
+
+  build-depends:
+    base >=4.7 && < 5,
+    deepseq,
+    geodetics >= 0.1.2,
+    microlens,
+    microlens-th,
+--    pandoc,
+    pandoc-types,
+--    text,
+    time,
+    dive-journal:dive-datum,
+    dive-journal:dive-entry-class,
+
+  exposed-modules:
+    SCUBA.Form
+
+  ghc-options:
+    -ddump-splices
+
+  hs-source-dirs:
+    lib/dive-form
 
   visibility:
     private

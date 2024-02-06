@@ -1,8 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module SCUBA.Dive.Result (
+module SCUBA.Dive.Outcome (
     -- * DiveEvent
-    DiveResult (),
+    DiveOutcome (),
 
     -- ** Data-types
     DiveAirSupply (),
@@ -231,7 +231,7 @@ instance Show DiveTotalTime where
     show (DiveTotalTime minutes) = unwords [show minutes, "min"]
 
 
-data DiveResult = DiveResult
+data DiveOutcome = DiveOutcome
     { _diveTotalTime ∷ DiveTotalTime
     , _diveMaximumDepth ∷ DiveMaximumDepth
     , _diveAirSupplyStart ∷ DiveAirSupply
@@ -240,30 +240,30 @@ data DiveResult = DiveResult
 
 
 -- | @since 0.1.0
-deriving stock instance Data DiveResult
+deriving stock instance Data DiveOutcome
 
 
 -- | @since 0.1.0
-deriving stock instance Eq DiveResult
+deriving stock instance Eq DiveOutcome
 
 
 -- | @since 0.1.0
-deriving stock instance Generic DiveResult
+deriving stock instance Generic DiveOutcome
 
 
 -- | @since 0.1.0
-deriving anyclass instance NFData DiveResult
+deriving anyclass instance NFData DiveOutcome
 
 
 -- | @since 0.1.0
-deriving stock instance Ord DiveResult
+deriving stock instance Ord DiveOutcome
 
 
 -- | @since 0.1.0
-deriving stock instance Show DiveResult
+deriving stock instance Show DiveOutcome
 
 
-instance ToJournalSection DiveResult where
+instance ToJournalSection DiveOutcome where
     toJournalSection result =
         let header = pure . Str $ fromString "Dive Data"
             defKVP =
@@ -301,38 +301,38 @@ pandocDiveTotalTime minutes =
 
 
 {-# INLINE diveAirSupplyFinal #-}
-diveAirSupplyFinal ∷ Lens' DiveResult DiveAirSupply
+diveAirSupplyFinal ∷ Lens' DiveOutcome DiveAirSupply
 diveAirSupplyFinal
     f_adte
-    (DiveResult x1_adtf x2_adtg x3_adth x4_adti) =
+    (DiveOutcome x1_adtf x2_adtg x3_adth x4_adti) =
         fmap
-            (\y1_adtj → DiveResult x1_adtf x2_adtg x3_adth y1_adtj)
+            (\y1_adtj → DiveOutcome x1_adtf x2_adtg x3_adth y1_adtj)
             (f_adte x4_adti)
 
 
 {-# INLINE diveAirSupplyStart #-}
-diveAirSupplyStart ∷ Lens' DiveResult DiveAirSupply
+diveAirSupplyStart ∷ Lens' DiveOutcome DiveAirSupply
 diveAirSupplyStart
     f_adtk
-    (DiveResult x1_adtl x2_adtm x3_adtn x4_adto) =
+    (DiveOutcome x1_adtl x2_adtm x3_adtn x4_adto) =
         fmap
-            (\y1_adtp → DiveResult x1_adtl x2_adtm y1_adtp x4_adto)
+            (\y1_adtp → DiveOutcome x1_adtl x2_adtm y1_adtp x4_adto)
             (f_adtk x3_adtn)
 
 
 {-# INLINE diveMaximumDepth #-}
-diveMaximumDepth ∷ Lens' DiveResult DiveMaximumDepth
+diveMaximumDepth ∷ Lens' DiveOutcome DiveMaximumDepth
 diveMaximumDepth
     f_adtq
-    (DiveResult x1_adtr x2_adts x3_adtt x4_adtu) =
+    (DiveOutcome x1_adtr x2_adts x3_adtt x4_adtu) =
         fmap
-            (\y1_adtv → DiveResult x1_adtr y1_adtv x3_adtt x4_adtu)
+            (\y1_adtv → DiveOutcome x1_adtr y1_adtv x3_adtt x4_adtu)
             (f_adtq x2_adts)
 
 
 {-# INLINE diveTotalTime #-}
-diveTotalTime ∷ Lens' DiveResult DiveTotalTime
-diveTotalTime f_adtw (DiveResult x1_adtx x2_adty x3_adtz x4_adtA) =
+diveTotalTime ∷ Lens' DiveOutcome DiveTotalTime
+diveTotalTime f_adtw (DiveOutcome x1_adtx x2_adty x3_adtz x4_adtA) =
     fmap
-        (\y1_adtB → DiveResult y1_adtB x2_adty x3_adtz x4_adtA)
+        (\y1_adtB → DiveOutcome y1_adtB x2_adty x3_adtz x4_adtA)
         (f_adtw x1_adtx)
