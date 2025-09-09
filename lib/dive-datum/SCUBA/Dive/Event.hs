@@ -5,6 +5,7 @@ module SCUBA.Dive.Event (
     DiveEvent (DiveEvent),
 
     -- ** Data-types
+    DiveTitle(),
     DiveDate (..),
     DiveDay (),
     DiveHour (),
@@ -14,6 +15,7 @@ module SCUBA.Dive.Event (
     DiveCoordinates (),
 
     -- ** Lenses
+    diveTitle,
     diveDate,
     diveSiteName,
     diveCity,

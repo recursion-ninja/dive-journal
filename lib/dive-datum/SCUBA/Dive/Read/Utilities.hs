@@ -1,4 +1,4 @@
--- {-# LANGUAGE Safe #-}
+{-# LANGUAGE Safe #-}
 
 module SCUBA.Dive.Read.Utilities (
     pChar,

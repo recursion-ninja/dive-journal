@@ -11,7 +11,7 @@ module Main
 
 import Brick hiding (Direction, Max)
 
-
+import FrontEnd.Record
 
 import qualified Graphics.Vty as V
 
@@ -60,28 +60,28 @@ data Pannel
 --    | EntryEditor
 
 
-data AppState
+data AppState e
     = Coverpage CoverpageOptions
     | Settings ()
     | Browser ()
-    | Editor ()
+    | Editor (EditorState e)
 
 
-_Coverpage :: Traversal AppState AppState CoverpageOptions CoverpageOptions
+_Coverpage :: Traversal (AppState e) (AppState e) CoverpageOptions CoverpageOptions
 _Coverpage f (Coverpage xs) = Coverpage <$> f xs
 _Coverpage _ (Settings b) = pure (Settings b)
 _Coverpage _ (Browser b) = pure (Browser b)
 _Coverpage _ (Editor b) = pure (Editor b)
 
 
-_Editor :: Traversal AppState AppState () ()
+_Editor :: Traversal (AppState e) (AppState e) () ()
 _Editor _ (Coverpage xs) = pure (Coverpage xs)
 _Editor _ (Settings b) = pure (Settings b)
 _Editor _ (Browser b) = pure (Browser b)
-_Editor f (Editor b) = Editor <$> f b
+_Editor f (Editor eState) = pure (Editor eState)
 
 
-initialState :: AppState
+initialState :: (AppState e)
 initialState = Coverpage coverPageOptions
 
 
@@ -91,7 +91,7 @@ main = do
     putStrLn $ "You chose: "
 
 
-theApp :: M.App AppState e Pannel
+theApp :: M.App (AppState e) e Pannel
 theApp =
     M.App { M.appDraw = drawUI
           , M.appChooseCursor = M.showFirstCursor
@@ -101,14 +101,17 @@ theApp =
           }
 
 
-drawUI :: AppState -> [Widget Pannel]
+drawUI :: AppState e -> [Widget Pannel]
 drawUI = \case
     Coverpage opts -> drawCoverpage opts
-    Editor () -> [str "E D I T O R \x2303 + c\x20E3"]
+    Editor editState -> case _editorPane editState of
+        EditorDiveEvent       -> [str "E D I T O R \x2303 + c\x20E3"]
+        EditorDiveEnvironment -> [str "E D I T O R \x2303 + c\x20E3"]
+        EditorDiveOutcome     -> [str "E D I T O R \x2303 + c\x20E3"]
     _ -> []
 
 
-appEvent :: T.BrickEvent Pannel e -> T.EventM Pannel AppState ()
+appEvent :: T.BrickEvent Pannel e -> T.EventM Pannel (AppState e) ()
 appEvent = \case
     -- Immediately handle terminal control events
     VtyEvent (V.EvResize  {}) -> pure ()
@@ -120,12 +123,11 @@ appEvent = \case
             V.EvKey V.KEnter [] -> case L.listSelectedElement opts of
                 Nothing -> pure ()
                 Just (_, ChooseEntryViewer) -> put $ Browser ()
-                Just (_, ChooseEntryCreate) -> put $ Editor ()
+                Just (_, ChooseEntryCreate) -> put $ Editor $ EditorState EditorDiveEvent diveEventForm
                 Just (_, ChoosePreferences) -> put $ Settings ()
             _ -> zoom _Coverpage $ L.handleListEvent vtyEvent
 
         _ -> pure ()
-
 
 theMap :: A.AttrMap
 theMap = A.attrMap V.defAttr
@@ -166,14 +168,14 @@ drawCoverPageOptions opts =
                     let styling
                             | isSelected = labelBoarder -- border -- . withAttr coverPageSelected
                             | otherwise = (<+> str " ")
-                          
+
                     in   styling . f isSelected
-        
+
                 renderGlyph = \case
                     ChooseEntryViewer -> "🔎"
                     ChooseEntryCreate -> "➕"
                     ChoosePreferences -> "⚙️ "
-                
+
                 renderLabel isSelected = labelFormatter isSelected . labelText
 
                 labelText = \case
@@ -223,20 +225,20 @@ drawCoverPageOptions opts =
                     ChooseEntryViewer -> "View and/or edit the existing dive log enrties in the journal"
                     ChooseEntryCreate -> "Create a new dive log entry in the journal"
                     ChoosePreferences -> "View and/or edit the journal preferences"
-        
+
         total = str $ show $ V.length $ opts ^. L.listElementsL
 
         boxOptList =
               hLimit optListWidth $
               vLimit optListHeight $
               L.renderList drawCoverPageOption True opts
-              
+
         boxDescribe = updateAttrMap (A.applyAttrMappings selectedOptionAttrs) $
               withBorderStyle unicodeBold . border $ --withBorderStyle unicodeRounded $ B.border $
               hLimit helpBoxWidth $
               vLimit helpBoxHeight $
               (<=> fill ' ') $ padLeftRight 1 $ strWrap getSelectedOptText
-        
+
     in  vBox [ C.hCenter $ joinBorders $ (boxOptList <+> boxDescribe)
                               , str " "
                               , C.hCenter $ vBox

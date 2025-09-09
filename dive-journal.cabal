@@ -97,6 +97,8 @@ Executable dive-journal-tui
 --    mtl,
     vector,
     vty,
+    dive-journal:dive-datum,
+    dive-journal:dive-entry-class,
 
   ghc-options:
     -rtsopts
@@ -111,7 +113,7 @@ Executable dive-journal-tui
     FrontEnd.hs
 
   other-modules:
---    FrontEnd.Core
+    FrontEnd.Record
 --    FrontEnd.Types
 
   other-extensions:
